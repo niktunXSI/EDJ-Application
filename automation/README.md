@@ -1,0 +1,16 @@
+# Client requests → GitHub issues automation
+
+The Cursor automation that runs on this repository uses `cpi-github.mjs` to turn queued Client Product Insights requests into structured GitHub issues. `PROMPT.md` is the automation's prompt.
+
+Copied from [niktunXSI/EDJDemo](https://github.com/niktunXSI/EDJDemo) (`automation/`); full setup is in that repository's `docs/AUTOMATION.md`.
+
+The helper is dependency-free (Node 18+) and reads these environment variables:
+
+| Variable | Purpose |
+| --- | --- |
+| `CPI_BASE_URL` | Client Product Insights address |
+| `CPI_API_KEY` | Agent API key |
+| `CURSOR_APP_TOKEN` | Cursor API key that can open the app |
+| `GITHUB_TOKEN` | Token with Issues read/write on this repository |
+| `GITHUB_REPO` | `niktunXSI/EDJ-Application` |
+| `ALLOW_PUBLIC_ISSUES` | `true` while this repository is public and the app holds synthetic demo data |
