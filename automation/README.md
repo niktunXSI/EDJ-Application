@@ -4,6 +4,8 @@ The Cursor automation that runs on this repository uses `cpi-github.mjs` to turn
 
 Copied from [niktunXSI/EDJDemo](https://github.com/niktunXSI/EDJDemo) (`automation/`); full setup is in that repository's `docs/AUTOMATION.md`.
 
+Run `node automation/cpi-github.mjs doctor` to check every connection without changing anything. Moving to another Cursor account: see `docs/MIGRATION.md` in EDJDemo.
+
 The helper is dependency-free (Node 18+) and reads these environment variables:
 
 | Variable | Purpose |
