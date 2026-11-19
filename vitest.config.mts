@@ -1,0 +1,30 @@
+import { fileURLToPath } from "node:url";
+import { defineConfig } from "vitest/config";
+
+const testDatabaseUrl = process.env.TEST_DATABASE_URL ?? "";
+
+export default defineConfig({
+  resolve: {
+    alias: {
+      "@": fileURLToPath(new URL("./src", import.meta.url)),
+      "server-only": fileURLToPath(new URL("./tests/support/empty.ts", import.meta.url)),
+      "next/headers": fileURLToPath(new URL("./tests/support/next-headers.ts", import.meta.url)),
+    },
+  },
+  test: {
+    environment: "node",
+    include: ["tests/**/*.test.ts"],
+    pool: "forks",
+    // A shared PostgreSQL database cannot be reset by several files at once.
+    fileParallelism: testDatabaseUrl === "",
+    testTimeout: 30000,
+    hookTimeout: 60000,
+    env: {
+      PGLITE_DATA_DIR: "memory",
+      DATABASE_URL: testDatabaseUrl,
+      SEED_ON_EMPTY: "true",
+      CURSOR_APP_ID: "",
+      APP_BASE_URL: "",
+    },
+  },
+});
