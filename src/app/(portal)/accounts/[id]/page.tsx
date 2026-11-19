@@ -9,11 +9,13 @@ import { FieldRow, PageHeader, Panel } from "@/components/app/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ACCOUNT_TYPE_LABELS, ASSET_CLASS_COLORS, ASSET_CLASS_LABELS } from "@/lib/domain";
+import { IraContributionCards } from "@/components/portal/ira-contribution-card";
+import { ACCOUNT_TYPE_LABELS, ASSET_CLASS_COLORS, ASSET_CLASS_LABELS, RETIREMENT_ACCOUNT_TYPES } from "@/lib/domain";
 import { formatCurrency, formatDate, formatPercent, formatQuantity } from "@/lib/format";
 import { ApiError } from "@/lib/server/http";
 import { listActivity } from "@/lib/server/services/activity";
 import { listDocuments } from "@/lib/server/services/documents";
+import { getIraContributions } from "@/lib/server/services/ira-contributions";
 import { getAccount, getValueHistory } from "@/lib/server/services/portfolio";
 import { getPageContext } from "@/lib/server/session";
 import { cn } from "@/lib/utils";
@@ -26,10 +28,12 @@ export default async function AccountPage({ params }: PageProps<"/accounts/[id]"
     if (error instanceof ApiError && error.status === 404) notFound();
     throw error;
   });
-  const [history, activity, documents] = await Promise.all([
+  const isIra = RETIREMENT_ACCOUNT_TYPES.includes(account.type);
+  const [history, activity, documents, iraContributions] = await Promise.all([
     getValueHistory(context.householdId, "1y", id),
     listActivity(context.householdId, { range: "12m", accountId: id, limit: 12, offset: 0 }),
     listDocuments(context.householdId, { accountId: id }),
+    isIra ? getIraContributions(context.householdId) : Promise.resolve(null),
   ]);
 
   return (
@@ -107,6 +111,12 @@ export default async function AccountPage({ params }: PageProps<"/accounts/[id]"
           </Panel>
         </div>
       </div>
+
+      {iraContributions ? (
+        <div className="mt-6">
+          <IraContributionCards contributions={iraContributions} />
+        </div>
+      ) : null}
 
       <Tabs defaultValue="holdings" className="mt-6">
         <TabsList>

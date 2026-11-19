@@ -253,6 +253,41 @@ export interface Preferences {
   updatedAt: string;
 }
 
+export interface IraContributionAccount {
+  id: string;
+  nickname: string;
+  type: AccountType;
+  contributed: number;
+}
+
+/** One household member's progress toward the shared Traditional + Roth IRA limit for a tax year. */
+export interface IraContributionSummary {
+  clientId: string;
+  clientName: string;
+  firstName: string;
+  taxYear: number;
+  /** Last day to contribute for the tax year (yyyy-mm-dd). */
+  deadline: string;
+  baseLimit: number;
+  catchUpAmount: number;
+  catchUpEligible: boolean;
+  limit: number;
+  contributed: number;
+  /** Never below zero; see `excess` for the amount over the limit. */
+  remaining: number;
+  excess: number;
+  /** Contributed / limit, capped at 1. */
+  progress: number;
+  /** The member's Traditional and Roth IRAs; empty when they hold none. */
+  accounts: IraContributionAccount[];
+}
+
+export interface IraContributions {
+  taxYear: number;
+  deadline: string;
+  members: IraContributionSummary[];
+}
+
 export interface Overview {
   household: Household;
   totalValue: number;
@@ -263,6 +298,7 @@ export interface Overview {
   recentActivity: ActivityItem[];
   goals: Goal[];
   upcomingMovements: Movement[];
+  iraContributions: IraContributions;
   unreadMessages: number;
   newDocuments: number;
 }

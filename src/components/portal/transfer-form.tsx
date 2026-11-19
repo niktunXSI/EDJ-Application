@@ -20,9 +20,9 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { apiFetch, errorMessage, fieldErrors } from "@/lib/api-client";
-import { FREQUENCIES, FREQUENCY_LABELS, MOVEMENT_KINDS, type AccountType, type Frequency, type MovementKind } from "@/lib/domain";
+import { FREQUENCIES, FREQUENCY_LABELS, MOVEMENT_KINDS, RETIREMENT_ACCOUNT_TYPES, type AccountType, type Frequency, type MovementKind } from "@/lib/domain";
 import { formatCurrency, formatDate } from "@/lib/format";
-import type { BankAccount, Movement } from "@/lib/types";
+import type { BankAccount, IraContributionSummary, IraContributions, Movement } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 export interface TransferAccount {
@@ -31,6 +31,38 @@ export interface TransferAccount {
   maskedNumber: string;
   type: AccountType;
   cashBalance: number;
+  ownerClientId: string | null;
+}
+
+function iraOwnerSummary(
+  kind: MovementKind,
+  toAccountId: string,
+  accounts: TransferAccount[],
+  iraContributions: IraContributions,
+): IraContributionSummary | undefined {
+  if (kind === "withdrawal" || !toAccountId) return undefined;
+  const to = accounts.find((a) => a.id === toAccountId);
+  if (!to || !RETIREMENT_ACCOUNT_TYPES.includes(to.type) || !to.ownerClientId) return undefined;
+  return iraContributions.members.find((m) => m.clientId === to.ownerClientId);
+}
+
+/** Monthly transfers are totalled through December, since every payment counts toward the same year's limit. */
+function iraOverLimitWarning(summary: IraContributionSummary, numericAmount: number, frequency: Frequency, scheduledFor: string): string | null {
+  if (!Number.isFinite(numericAmount) || numericAmount <= 0) return null;
+  if (Number(scheduledFor.slice(0, 4)) !== summary.taxYear) return null;
+  const payments = frequency === "monthly" ? 13 - Number(scheduledFor.slice(5, 7)) : 1;
+  const total = Math.round(numericAmount * payments * 100) / 100;
+  if (total <= summary.remaining) return null;
+  const { firstName, taxYear } = summary;
+  const penalty = "Contributions over the limit can owe a 6% excess-contribution tax each year until corrected.";
+  if (summary.excess > 0) {
+    return `${firstName} is already ${formatCurrency(summary.excess)} over the ${taxYear} IRA contribution limit. ${penalty}`;
+  }
+  if (summary.remaining === 0) {
+    return `${firstName} has already reached the ${taxYear} IRA contribution limit. ${penalty}`;
+  }
+  const what = payments > 1 ? `These ${payments} monthly transfers through December total ${formatCurrency(total)}, which is` : "This is";
+  return `${what} ${formatCurrency(total - summary.remaining)} more than ${firstName}'s remaining ${taxYear} IRA contribution room. ${penalty}`;
 }
 
 const KIND_TABS: Record<MovementKind, string> = {
@@ -44,11 +76,13 @@ const BRANCH_ONLY: readonly AccountType[] = ["traditional_ira", "roth_ira", "edu
 export function TransferForm({
   accounts,
   banks,
+  iraContributions,
   today,
   defaultTo,
 }: {
   accounts: TransferAccount[];
   banks: BankAccount[];
+  iraContributions: IraContributions;
   today: string;
   defaultTo?: string;
 }) {
@@ -73,6 +107,12 @@ export function TransferForm({
   const bankLabel = (id: string) => banks.find((b) => b.id === id)?.label ?? "";
   const from = accounts.find((a) => a.id === fromAccountId);
   const numericAmount = Number(amount.replace(/[$,\s]/g, ""));
+  const iraSummary = useMemo(
+    () => iraOwnerSummary(kind, toAccountId, accounts, iraContributions),
+    [kind, toAccountId, accounts, iraContributions],
+  );
+  const iraWarning = iraSummary ? iraOverLimitWarning(iraSummary, numericAmount, frequency, scheduledFor) : null;
+  const iraOtherYear = iraSummary && scheduledFor && Number(scheduledFor.slice(0, 4)) !== iraSummary.taxYear ? scheduledFor.slice(0, 4) : null;
 
   function validate() {
     const next: Record<string, string> = {};
@@ -235,6 +275,14 @@ export function TransferForm({
             </Select>
           )}
           {fieldError(kind === "withdrawal" ? "bankAccountId" : "toAccountId")}
+          {iraSummary && (
+            <p className="mt-2 text-[12.5px] leading-relaxed text-muted-foreground">
+              {iraSummary.firstName} has {formatCurrency(iraSummary.remaining)} of {iraSummary.taxYear} IRA contribution room left (limit{" "}
+              {formatCurrency(iraSummary.limit, { whole: true })}, {formatCurrency(iraSummary.contributed)} contributed). Contribute by{" "}
+              {formatDate(iraSummary.deadline)}.
+              {iraOtherYear && ` Transfers dated in ${iraOtherYear} count toward the ${iraOtherYear} limit instead.`}
+            </p>
+          )}
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
@@ -256,6 +304,14 @@ export function TransferForm({
             </div>
             {fieldError("amount")}
             {from && kind !== "deposit" && <p className="mt-1 text-[12px] text-muted-foreground">{formatCurrency(from.cashBalance)} cash available</p>}
+            {iraWarning && !reviewing && (
+              <p
+                role="alert"
+                className="mt-2 rounded-md bg-[#fdf0dc] px-3 py-2 text-[12px] leading-relaxed text-[#8a5a00]"
+              >
+                {iraWarning}
+              </p>
+            )}
           </div>
           <div>
             <Label htmlFor="transfer-frequency" className="mb-1.5">
@@ -317,6 +373,14 @@ export function TransferForm({
               </div>
             ))}
           </dl>
+          {iraWarning && (
+            <p
+              role="alert"
+              className="rounded-md bg-[#fdf0dc] px-3 py-2 text-[12px] leading-relaxed text-[#8a5a00]"
+            >
+              {iraWarning}
+            </p>
+          )}
           <AlertDialogFooter>
             <AlertDialogCancel disabled={submitting}>Edit</AlertDialogCancel>
             <AlertDialogAction

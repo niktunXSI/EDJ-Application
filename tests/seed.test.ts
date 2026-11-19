@@ -28,10 +28,11 @@ describe("demo seed", () => {
   it("records IRA contributions with their tax year", async () => {
     const rows = await sql<{ account_id: string; tax_year: number; total: number }>(
       `select account_id, tax_year, sum(amount)::float as total from transactions
-        where activity_type = 'contribution' and account_id in ('ACC-2215', 'ACC-3092')
+        where activity_type = 'contribution' and account_id in ('ACC-2208', 'ACC-2215', 'ACC-3092')
         group by account_id, tax_year order by account_id, tax_year`,
     );
     expect(rows).toEqual([
+      { account_id: "ACC-2208", tax_year: 2026, total: 1000 },
       { account_id: "ACC-2215", tax_year: 2025, total: 8000 },
       { account_id: "ACC-2215", tax_year: 2026, total: 5500 },
       { account_id: "ACC-3092", tax_year: 2025, total: 7000 },

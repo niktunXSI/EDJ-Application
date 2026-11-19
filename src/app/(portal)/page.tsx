@@ -6,6 +6,7 @@ import { ActivityList } from "@/components/portal/activity-list";
 import { AllocationDonut } from "@/components/portal/allocation-donut";
 import { Change } from "@/components/portal/change";
 import { GoalProgressBar, GoalStatus } from "@/components/portal/goal-progress";
+import { IraContributionCards } from "@/components/portal/ira-contribution-card";
 import { ValueChart } from "@/components/portal/value-chart";
 import { Panel } from "@/components/app/page-header";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -130,6 +131,8 @@ export default async function OverviewPage() {
           <AllocationDonut slices={overview.allocation} size={150} label="Total" />
         </Panel>
       </div>
+
+      <IraContributionCards contributions={overview.iraContributions} />
 
       <div className="grid gap-6 lg:grid-cols-3">
         <Panel

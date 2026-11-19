@@ -6,6 +6,7 @@ import { PageHeader, Panel } from "@/components/app/page-header";
 import { todayIso } from "@/lib/dates";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { MAX_ONLINE_MOVEMENT } from "@/lib/server/config";
+import { getIraContributions } from "@/lib/server/services/ira-contributions";
 import { listAccounts } from "@/lib/server/services/portfolio";
 import { listBankAccounts, listMovements } from "@/lib/server/services/transfers";
 import { getPageContext } from "@/lib/server/session";
@@ -16,10 +17,11 @@ export default async function TransfersPage({ searchParams }: PageProps<"/transf
   const context = await getPageContext();
   if (!context) notFound();
   const sp = await searchParams;
-  const [accounts, banks, movements] = await Promise.all([
+  const [accounts, banks, movements, iraContributions] = await Promise.all([
     listAccounts(context.householdId),
     listBankAccounts(context.householdId),
     listMovements(context.householdId),
+    getIraContributions(context.householdId),
   ]);
   const requestedTo = typeof sp.to === "string" && accounts.some((a) => a.id === sp.to) ? sp.to : undefined;
 
@@ -29,8 +31,16 @@ export default async function TransfersPage({ searchParams }: PageProps<"/transf
       <div className="grid gap-6 lg:grid-cols-5">
         <Panel title="Move money" className="lg:col-span-3" bodyClassName="p-5">
           <TransferForm
-            accounts={accounts.map((a) => ({ id: a.id, nickname: a.nickname, maskedNumber: a.maskedNumber, type: a.type, cashBalance: a.cashBalance }))}
+            accounts={accounts.map((a) => ({
+              id: a.id,
+              nickname: a.nickname,
+              maskedNumber: a.maskedNumber,
+              type: a.type,
+              cashBalance: a.cashBalance,
+              ownerClientId: a.ownerClientId,
+            }))}
             banks={banks}
+            iraContributions={iraContributions}
             today={todayIso()}
             defaultTo={requestedTo}
           />

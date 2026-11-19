@@ -294,6 +294,18 @@ function buildTransactions(today: string, holdings: Holding[]): Txn[] {
     buy("ACC-3092", "PTMK", nextBusinessDay(addDays(date, 1)), amount);
   }
 
+  // Simran also funds her Traditional IRA; it shares one annual limit with her Roth IRA.
+  const traditionalDate = nextBusinessDay(ymd(year, 3, 14));
+  add({
+    accountId: "ACC-2208",
+    tradeDate: traditionalDate,
+    type: "contribution",
+    description: `Contribution from Lakeside Credit Union ••6612 — tax year ${year}`,
+    amount: 1000,
+    taxYear: year,
+  });
+  buy("ACC-2208", "HCBAX", nextBusinessDay(addDays(traditionalDate, 1)), 1000);
+
   // The 401(k) rollover into Simran's Traditional IRA, then its investment.
   const rolloverDate = nextBusinessDay(addDays(today, -610));
   add({
