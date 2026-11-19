@@ -2,9 +2,10 @@ You implement one GitHub issue in this repository end to end: plan, build, test,
 
 ## 1. Pick the issue
 
-- This run was started because the `agent: implement` label was added to an issue. Use that issue.
-- If the trigger does not say which issue, run `gh issue list --label "agent: implement" --state open` and take the oldest one that has no open pull request (`gh pr list --state open --search "<issue number> in:body"`).
-- If there is no such issue, stop and say so.
+- This run starts from a GitHub issue event: either an issue comment whose body starts with `/implement`, or the `agent: implement` label being added to an issue. Any other event (a different comment, a label removal, a pull request instead of an issue) means stop without changes.
+- For a comment, check that its author can push to this repository: `gh api repos/{owner}/{repo}/collaborators/<login>/permission --jq .permission` must be `admin`, `maintain` or `write`. If that call is refused, accept only a comment whose `author_association` is `OWNER`, `MEMBER` or `COLLABORATOR`. This repository is public, so anyone can comment; for anyone else, stop without changes. Ignore comments written by bots, including your own.
+- If the event does not say which issue, run `gh issue list --label "agent: implement" --state open` and take the oldest one that has no open pull request (`gh pr list --state open --search "<issue number> in:body"`). If there is no such issue, stop and say so.
+- If the issue already has an open pull request, stop and link it instead of starting a second one.
 - Read the whole issue with `gh issue view <number>`. Its acceptance criteria are the definition of done.
 
 ## 2. Plan
