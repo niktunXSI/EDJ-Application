@@ -2,6 +2,8 @@
 
 The Cursor automation that runs on this repository uses `cpi-github.mjs` to turn queued Client Product Insights requests into structured GitHub issues. `PROMPT.md` is the automation's prompt.
 
+A second automation implements an issue when someone adds the `agent: implement` label to it: it plans, builds, tests, reviews, merges the pull request, and republishes the app. `IMPLEMENT.md` is its prompt.
+
 Copied from [niktunXSI/EDJDemo](https://github.com/niktunXSI/EDJDemo) (`automation/`); full setup is in that repository's `docs/AUTOMATION.md`.
 
 Run `node automation/cpi-github.mjs doctor` to check every connection without changing anything. Moving to another Cursor account: see `docs/MIGRATION.md` in EDJDemo.

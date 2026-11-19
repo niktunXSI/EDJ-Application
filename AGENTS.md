@@ -36,3 +36,10 @@ Enhancement issues arrive from the Client Product Insights automation (see `auto
 - Local development uses embedded PGlite whenever `DATABASE_URL` is unset; `npm run db:reset` restores the demo household.
 - Never commit secrets or real client data.
 - Do not edit `automation/` or `cursor/identity.ts` (the identity helper is generated).
+
+## Cursor Cloud specific instructions
+
+- Dependencies are installed by `.cursor/environment.json` (`npm ci`). No services need to be running before you start.
+- Run the dev server in tmux with `env -u DATABASE_URL npm run dev` so it uses embedded PGlite, and open it at `http://localhost:4318`.
+- If pages reload in a loop after `next.config.ts` changes, stop the dev server, delete `.next/dev`, and start it again.
+- Publish from the top-level agent only. The Publish confirmation appears in the chat of the agent that called publish-app, and a subagent's chat does not show it.
