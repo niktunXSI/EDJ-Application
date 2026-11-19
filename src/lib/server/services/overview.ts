@@ -4,17 +4,19 @@ import { recentActivity } from "./activity";
 import { countUnviewedDocuments } from "./documents";
 import { listGoals } from "./goals";
 import { getHousehold } from "./household";
+import { getIraContributions } from "./ira-contributions";
 import { countUnreadMessages } from "./messages";
 import { allocationOf, listAccountDetails } from "./portfolio";
 import { listMovements } from "./transfers";
 
 export async function getOverview(householdId: string): Promise<Overview> {
-  const [household, details, activity, goals, movements, unreadMessages, newDocuments] = await Promise.all([
+  const [household, details, activity, goals, movements, iraContributions, unreadMessages, newDocuments] = await Promise.all([
     getHousehold(householdId),
     listAccountDetails(householdId),
     recentActivity(householdId),
     listGoals(householdId),
     listMovements(householdId),
+    getIraContributions(householdId),
     countUnreadMessages(householdId),
     countUnviewedDocuments(householdId),
   ]);
@@ -30,6 +32,7 @@ export async function getOverview(householdId: string): Promise<Overview> {
     recentActivity: activity,
     goals,
     upcomingMovements: movements.upcoming.slice(0, 4),
+    iraContributions,
     unreadMessages,
     newDocuments,
   };

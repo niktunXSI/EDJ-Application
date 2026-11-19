@@ -8,7 +8,7 @@ The signed-in household is the **Kaur Household**: Simran Kaur and Arjun Singh, 
 
 | Area | Features |
 | --- | --- |
-| **Overview** | Total household value with day change and a 1M–3Y value chart, advisor card, items needing attention, accounts, asset allocation, goals, recent activity |
+| **Overview** | Total household value with day change and a 1M–3Y value chart, advisor card, items needing attention, accounts, asset allocation, IRA contribution room per household member, goals, recent activity |
 | **Accounts** | Joint advisory account, Traditional IRA, two Roth IRAs and a 529 plan. Per-account value history, holdings with gain/loss, allocation, activity and documents |
 | **Activity** | Filter by date range, account and type, plus search; money in/out totals; pagination; CSV export |
 | **Transfers** | Move money between accounts, deposit from or withdraw to linked banks, one-time or monthly, with review and confirmation. Scheduled transfers can be cancelled. Rules: no online IRA or 529 withdrawals, cash-available checks, a $250,000 online limit, dates up to one year ahead |

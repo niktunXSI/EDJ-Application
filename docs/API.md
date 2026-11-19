@@ -32,7 +32,8 @@ The browser helper `apiFetch` (`src/lib/api-client.ts`) handles all three.
 | --- | --- | --- |
 | GET | `/api/health` | `{ status, database }`; no sign-in required |
 | GET | `/api/household` | Household, advisor, service team, clients |
-| GET | `/api/overview` | Totals, accounts, allocation, goals, recent activity, upcoming transfers, unread counts |
+| GET | `/api/overview` | Totals, accounts, allocation, goals, recent activity, upcoming transfers, IRA contributions, unread counts |
+| GET | `/api/ira-contributions` | Current tax year's IRA contribution room per household member: `{ taxYear, deadline, members: IraContributionSummary[] }` (see `src/lib/types.ts`): limit, catch-up, contributed, remaining (never below zero), excess and per-account totals. Traditional and Roth IRAs share one limit ($7,500 for 2026, plus $1,100 if the member turns 50 by December 31) |
 | GET | `/api/history?range=1m\|3m\|ytd\|1y\|3y` | Household value history (default `1y`) |
 | GET | `/api/accounts` | `{ accounts }` summaries with market value, day change, cost basis |
 | GET | `/api/accounts/:id` | Account with holdings and allocation |
